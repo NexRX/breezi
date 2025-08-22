@@ -1,32 +1,23 @@
 {
-  "name": "breezi",
-  "version": "0.1.0",
-  "description": "",
-  "type": "module",
-  "scripts": {
-    "start": "vite",
-    "dev": "vite",
-    "build": "vite build",
-    "serve": "vite preview",
-    "tauri": "tauri"
-  },
-  "license": "MIT",
-  "dependencies": {
-    "@kobalte/core": "^0.13.11",
-    "@tailwindcss/vite": "^4.1.12",
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "solid-js": "^1.9.3",
-    "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.12",
-    "tailwindcss-animate": "^1.0.7"
-  },
-  "devDependencies": {
-    "@tauri-apps/cli": "^2",
-    "typescript": "~5.6.2",
-    "vite": "^6.0.3",
-    "vite-plugin-solid": "^2.11.0"
-  }
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"start": "vite",
+		"dev": "vite",
+		"build": "vite build",
+		"serve": "vite preview",
+		"check": "tsc"
+	},
+	"devDependencies": {
+		"typescript": "^5.8.3",
+		"vite": "^6.3.5",
+		"vite-plugin-solid": "^2.11.6",
+		"@tailwindcss/vite": "^4.1.10",
+		"tailwindcss": "^4.1.10"
+	},
+	"dependencies": {
+		"@qubit-rs/client": "^0.4.5",
+		"solid-js": "^1.9.7"
+	}
 }

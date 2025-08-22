@@ -1,0 +1,29 @@
+[package]
+name = "solid-rpc-rs"
+version = "0.1.0"
+edition = "2024"
+default-run = "solid-rpc-rs"
+autobins = false
+
+[[bin]]
+name = "solid-rpc-rs"
+path = "src-backend/main.rs"
+
+[dependencies]
+# Web Server
+tokio = { version = "1.44", features = ["full"] }
+axum = "0.8"
+tower-http = { version = "0.6.6", features = ["cors", "trace"] }
+
+# RPC + Spa (Embedding)
+qubit = "0.10.1"
+ts-rs = "10.1.0"
+axum-embed = "0.1.0"
+rust-embed = "8.7.2"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+# Misc / Configuration
+confique = "0.3.0"
