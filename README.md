@@ -84,6 +84,18 @@ In regular (debug) builds, it will re-use existing frontend builds, but when you
 
 ---
 
+## Components
+
+You can add component from the [solid-ui library](https://www.solid-ui.com/docs/components/accordion)
+
+To install more, run the following example:
+
+```sh
+npx solidui-cli@latest add button
+```
+
+Just replace *button* with whatever the name is from the linked solid-ui website above
+
 ## 🛠️ Usage
 
 - Define your Rust RPC endpoints in the backend.
