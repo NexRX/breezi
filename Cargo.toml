@@ -1,12 +1,12 @@
 [package]
-name = "solid-rpc-rs"
+name = "breezi"
 version = "0.1.0"
 edition = "2024"
-default-run = "solid-rpc-rs"
+default-run = "breezi"
 autobins = false
 
 [[bin]]
-name = "solid-rpc-rs"
+name = "breezi"
 path = "src-backend/main.rs"
 
 [dependencies]
@@ -16,8 +16,8 @@ axum = "0.8"
 tower-http = { version = "0.6.6", features = ["cors", "trace"] }
 
 # RPC + Spa (Embedding)
-qubit = "0.10.1"
-ts-rs = "10.1.0"
+qubit = "0.10.3"
+ts-rs = { version = "10.1.0", features = ["uuid-impl", "chrono-impl"] }
 axum-embed = "0.1.0"
 rust-embed = "8.7.2"
 
@@ -25,5 +25,23 @@ rust-embed = "8.7.2"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 
+# Database
+sqlx = { version = "0.7", features = [
+    "runtime-tokio-native-tls",
+    "sqlite",
+    "uuid",
+] }
+
 # Misc / Configuration
-confique = "0.3.0"
+clap = { version = "4.5.45", features = ["derive", "env"] }
+clap_config = "0.1.1"
+serde = "1.0.219"
+serde_yaml = "0.9.34"
+color-eyre = "0.6.5"                                        # error handling
+restructed = "0.2.2"
+uuid = { version = "1.18.0", features = ["v4", "serde"] }
+validator = { version = "0.20.0", features = ["derive"] }
+regex = "1.11.1"
+
+[build-dependencies]
+rusqlite = "0.30"

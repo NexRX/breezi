@@ -1,34 +1,34 @@
-mod config;
+mod logic;
+mod model;
 mod routes;
 
-use confique::Config;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use std::{error::Error, net::SocketAddr};
+use crate::{logic::setup_database, model::Config, routes::Routes};
+use color_eyre::eyre::Report;
+use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tracing::info;
-use crate::config::Conf;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-pub type Result<T = (), E = Box<dyn Error>> = std::result::Result<T, E>;
+pub type Result<T = (), E = Report> = std::result::Result<T, E>;
 
 #[tokio::main]
 async fn main() -> Result {
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::fmt::layer())
-        .init();
-    
-    let config = Conf::builder().env().load()?;
+    tracing_subscriber::registry().with(tracing_subscriber::fmt::layer()).init();
+    color_eyre::install()?;
 
-    let (router, qubit_handler) = routes::build(&config)?;
+    info!("Starting up...");
+    let config = Config::parse()?;
+    let pool = setup_database(&config).await?;
+    let router = Routes::build(config.clone(), pool)?;
 
-    info!("Starting web server on {}:{}", &config.host, &config.port);
+    info!("Starting web server on {}:{}", &config.server_host, &config.server_port);
     axum::serve(
-        TcpListener::bind(&SocketAddr::from((config.host, config.port)))
-            .await
-            .unwrap(),
-        router,
+        TcpListener::bind(&SocketAddr::from((config.server_host, config.server_port))).await?,
+        router.axum(),
     )
     .await?;
 
-    qubit_handler.stop()?;
+    info!("Stopping...");
+    router.stop_services()?;
     Ok(())
 }
