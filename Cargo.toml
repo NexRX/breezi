@@ -17,7 +17,12 @@ tower-http = { version = "0.6.6", features = ["cors", "trace"] }
 
 # RPC + Spa (Embedding)
 qubit = "0.10.3"
-ts-rs = { version = "10.1.0", features = ["uuid-impl", "chrono-impl"] }
+ts-rs = { version = "10.1.0", features = [
+    "uuid-impl",
+    "chrono-impl",
+    "serde-compat",
+    "serde-json-impl",
+] }
 axum-embed = "0.1.0"
 rust-embed = "8.7.2"
 
@@ -42,6 +47,9 @@ restructed = "0.2.2"
 uuid = { version = "1.18.0", features = ["v4", "serde"] }
 validator = { version = "0.20.0", features = ["derive"] }
 regex = "1.11.1"
+derive_more = { version = "2.0.1", features = ["full"] }
+chrono = { version = "0.4.41", features = ["serde"] }
+serde_json = "1.0.143"
 
 [build-dependencies]
 rusqlite = "0.30"

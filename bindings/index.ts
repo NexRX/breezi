@@ -10,8 +10,14 @@
 ############### && @@@@@@@@@@@@@@
 ############### & @@@@@@@@@@@@@    */
 
-import type { Query } from "@qubit-rs/client";
+import type { ErrorCode } from "./ErrorCode.ts";
+import type { ErrorResponse } from "./ErrorResponse.ts";
+import type { UserRegistration } from "./UserRegistration.ts";
+import type { Mutation } from "@qubit-rs/client";
 
-export type { Query } from "@qubit-rs/client";
+export type { ErrorCode } from "./ErrorCode.ts";
+export type { ErrorResponse } from "./ErrorResponse.ts";
+export type { UserRegistration } from "./UserRegistration.ts";
+export type { Mutation } from "@qubit-rs/client";
 
-export type QubitServer = { hello_world: Query<[], string> };
+export type QubitServer = { register: Mutation<[user: UserRegistration, ], { Ok : string } | { Err : ErrorResponse }> };

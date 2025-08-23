@@ -4,8 +4,8 @@ use sqlx::{Executor, Sqlite};
 use uuid::Uuid;
 use validator::Validate;
 
-#[derive(restructed::Models)] // must be seperate
-#[derive(Debug, Serialize, Deserialize, sqlx::FromRow, ts_rs::TS, PartialEq, Eq, Validate)]
+#[derive(restructed::Models)] // must be separate
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow, ts_rs::TS, PartialEq, Eq, Validate)]
 #[view(UserRegistration, fields(username, password, email), attributes_with = "all")]
 pub struct UserAll {
     #[validate(regex(path = *REGEX_UUID, code = "uuid"))]

@@ -1,14 +1,28 @@
+use std::collections::HashMap;
+
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use validator::{ValidationError, ValidationErrors};
+use validator::ValidationErrors;
+
+use crate::logic::Invalidation;
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 pub struct ErrorResponse {
-    pub code: ErrorCode,
+    pub reason: ErrorReason,
     pub message: String,
+    pub timestamp: DateTime<Utc>,
 }
 
 impl ErrorResponse {
     pub const INTERNAL_MESSAGE: &str = "Internal server error";
+
+    pub fn new(reason: ErrorReason, message: String) -> ErrorResponse {
+        ErrorResponse {
+            reason,
+            message,
+            timestamp: Utc::now(),
+        }
+    }
 
     pub fn internal() -> ErrorResponse {
         Self::default()
@@ -17,87 +31,60 @@ impl ErrorResponse {
 
 impl Default for ErrorResponse {
     fn default() -> Self {
-        Self {
-            code: ErrorCode::Internal,
-            message: Self::INTERNAL_MESSAGE.to_string(),
-        }
+        Self::new(ErrorReason::Internal, Self::INTERNAL_MESSAGE.to_string())
     }
 }
 
-#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, PartialOrd, Ord, Serialize, Deserialize, ts_rs::TS)]
-pub enum ErrorCode {
-    BadRequest = 4000,
-    Invalid = 4001,
-    Unauthorized = 4010,
-    Forbidden = 4030,
-    NotFound = 4040,
-    Conflict = 4090,
+#[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize, ts_rs::TS, derive_more::IsVariant)]
+pub enum ErrorReason {
+    BadRequest,
+    Invalid(HashMap<String, Invalidation>),
+    Unauthorized,
+    Forbidden,
+    NotFound,
+    Conflict,
     #[default]
-    Internal = 5000,
-    ServiceUnavailable = 5030,
-    GatewayTimeout = 5040,
+    Internal,
+    ServiceUnavailable,
+    GatewayTimeout,
 }
 
 impl From<sqlx::Error> for ErrorResponse {
     fn from(value: sqlx::Error) -> Self {
         match value {
-            sqlx::Error::Protocol(_) => ErrorResponse {
-                code: ErrorCode::BadRequest,
-                message: "Protocol error - Bad Request".to_string(),
-            },
-            sqlx::Error::ColumnIndexOutOfBounds { .. } => ErrorResponse {
-                code: ErrorCode::BadRequest,
-                message: "Column index out of bounds - Bad Request".to_string(),
-            },
-            sqlx::Error::ColumnNotFound(_) => ErrorResponse {
-                code: ErrorCode::BadRequest,
-                message: "Column not found - Bad Request".to_string(),
-            },
-            sqlx::Error::ColumnDecode { .. } => ErrorResponse {
-                code: ErrorCode::BadRequest,
-                message: "Column decode error - Bad Request".to_string(),
-            },
-            sqlx::Error::Decode(_) => ErrorResponse {
-                code: ErrorCode::BadRequest,
-                message: "Decode error - Bad Request".to_string(),
-            },
-            sqlx::Error::RowNotFound => ErrorResponse {
-                code: ErrorCode::NotFound,
-                message: "Entry not found".to_string(),
-            },
-            sqlx::Error::PoolClosed => ErrorResponse {
-                code: ErrorCode::ServiceUnavailable,
-                message: "Database pool closed - Service Unavailable".to_string(),
-            },
-            sqlx::Error::Io(_) => ErrorResponse {
-                code: ErrorCode::ServiceUnavailable,
-                message: "Database I/O error - Service Unavailable".to_string(),
-            },
-            sqlx::Error::Tls(_) => ErrorResponse {
-                code: ErrorCode::ServiceUnavailable,
-                message: "Database TLS error - Service Unavailable".to_string(),
-            },
-            sqlx::Error::PoolTimedOut => ErrorResponse {
-                code: ErrorCode::GatewayTimeout,
-                message: "Database pool timed out (504 Gateway Timeout".to_string(),
-            },
+            sqlx::Error::Protocol(_) => ErrorResponse::new(ErrorReason::BadRequest, "Protocol error - Bad Request".into()),
+            sqlx::Error::ColumnIndexOutOfBounds { .. } => ErrorResponse::new(
+                ErrorReason::BadRequest,
+                "Column index out of bounds - Bad Request".to_string(),
+            ),
+            sqlx::Error::ColumnNotFound(_) => {
+                ErrorResponse::new(ErrorReason::BadRequest, "Column not found - Bad Request".to_string())
+            }
+            sqlx::Error::ColumnDecode { .. } => {
+                ErrorResponse::new(ErrorReason::BadRequest, "Column decode error - Bad Request".to_string())
+            }
+            sqlx::Error::Decode(_) => ErrorResponse::new(ErrorReason::BadRequest, "Decode error - Bad Request".to_string()),
+            sqlx::Error::RowNotFound => ErrorResponse::new(ErrorReason::NotFound, "Entry not found".to_string()),
+            sqlx::Error::PoolClosed => ErrorResponse::new(
+                ErrorReason::ServiceUnavailable,
+                "Database pool closed - Service Unavailable".to_string(),
+            ),
+            sqlx::Error::Io(_) => ErrorResponse::new(
+                ErrorReason::ServiceUnavailable,
+                "Database I/O error - Service Unavailable".to_string(),
+            ),
+            sqlx::Error::Tls(_) => ErrorResponse::new(
+                ErrorReason::ServiceUnavailable,
+                "Database TLS error - Service Unavailable".to_string(),
+            ),
+            sqlx::Error::PoolTimedOut => ErrorResponse::new(
+                ErrorReason::GatewayTimeout,
+                "Database pool timed out (504 Gateway Timeout)".to_string(),
+            ),
             _ => ErrorResponse::default(),
         }
     }
 }
-
-impl From<ValidationError> for ErrorResponse {
-    fn from(value: ValidationError) -> Self {
-        Self {
-            code: ErrorCode::Invalid,
-            message: value
-                .message
-                .map(|v| v.to_string())
-                .unwrap_or_else(|| format!("The fields you gave are not valid ({})", value.code)),
-        }
-    }
-}
-
 impl From<ValidationErrors> for ErrorResponse {
     fn from(value: ValidationErrors) -> Self {
         let mut messages = Vec::new();
@@ -113,16 +100,42 @@ impl From<ValidationErrors> for ErrorResponse {
             }
         }
 
-        let message = if messages.is_empty() {
-            "The fields you gave are not valid".to_string()
-        } else {
-            messages.join("\n")
-        };
+        // Sort messages for consistent output
+        messages.sort();
 
-        Self {
-            code: ErrorCode::Invalid,
-            message,
-        }
+        let reasons: HashMap<String, Invalidation> = value
+            .field_errors()
+            .into_iter()
+            .map(|(field, errors)| {
+                // Take the first error for this field
+                let error = &errors[0];
+
+                let code = if error.code == "regex" {
+                    "pattern match".to_string()
+                } else {
+                    error.code.to_string()
+                };
+
+                // Collect and sort rules for consistent output
+                let rules: HashMap<String, String> = error
+                    .params
+                    .iter()
+                    .filter(|(k, _)| *k != "value")
+                    .map(|(k, v)| (k.to_string(), v.to_string()))
+                    .collect();
+
+                let value = error.params.get("value").cloned().unwrap_or(serde_json::Value::Null);
+                let message = error
+                    .message
+                    .as_ref()
+                    .map(|msg| msg.to_string())
+                    .unwrap_or_else(|| format!("Given value is not a valid {code}"));
+
+                (field.to_string(), Invalidation::new(code, message, value, rules))
+            })
+            .collect();
+
+        ErrorResponse::new(ErrorReason::Invalid(reasons), "One or more fields are invalid".into())
     }
 }
 
@@ -140,4 +153,4 @@ macro_rules! impl_from_report_for_error_response {
         }
     };
 }
-impl_from_report_for_error_response!(sqlx::Error, ValidationError, ValidationErrors);
+impl_from_report_for_error_response!(sqlx::Error, ValidationErrors);
