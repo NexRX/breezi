@@ -30,7 +30,7 @@ fn main() {
         .expect("frontend build failed with detected js package manager");
 
     if !status.success() {
-        panic!("Frontend build command failed with status: {}", status);
+        panic!("Frontend build command failed with status: {status}");
     }
 }
 
@@ -39,7 +39,7 @@ fn js_package_manager() -> &'static str {
         .iter()
         .find_map(|manager| Command::new(manager).arg("--version").output().map(|_| manager).ok())
         .expect("no JavaScript package manager installation found");
-    println!("cargo:warning=Using {} as package manager", manager);
+    println!("cargo:warning=Using {manager} as package manager");
     manager
 }
 
@@ -66,7 +66,7 @@ fn create_database() {
 fn migrate_database() {
     // Ensure sqlx-cli is installed
     let status = Command::new("cargo")
-        .args(&["install", "sqlx-cli"])
+        .args(["install", "sqlx-cli"])
         .status()
         .expect("failed to run cargo install sqlx-cli");
     if !status.success() {
@@ -75,7 +75,7 @@ fn migrate_database() {
 
     // Run sqlx migrations
     let status = Command::new("sqlx")
-        .args(&["migrate", "run", "--database-url", &format!("sqlite://{}", DB_PATH)])
+        .args(["migrate", "run", "--database-url", &format!("sqlite://{DB_PATH}")])
         .status()
         .expect("failed to run sqlx migrate run");
     if !status.success() {

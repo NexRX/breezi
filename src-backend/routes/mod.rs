@@ -89,7 +89,7 @@ impl FromRequestExtensions<()> for Tx {
     }
 }
 
-/// Axum extension to automatically obtain a auto-commiting database connection on request
+/// Axum extension to automatically obtain a auto-committing database connection on request
 ///
 /// Example:
 /// ```no_run
