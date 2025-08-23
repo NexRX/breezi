@@ -10,12 +10,12 @@
 ############### && @@@@@@@@@@@@@@
 ############### & @@@@@@@@@@@@@    */
 
-import type { ErrorCode } from "./ErrorCode.ts";
+import type { ErrorReason } from "./ErrorReason.ts";
 import type { ErrorResponse } from "./ErrorResponse.ts";
 import type { UserRegistration } from "./UserRegistration.ts";
 import type { Mutation } from "@qubit-rs/client";
 
-export type { ErrorCode } from "./ErrorCode.ts";
+export type { ErrorReason } from "./ErrorReason.ts";
 export type { ErrorResponse } from "./ErrorResponse.ts";
 export type { UserRegistration } from "./UserRegistration.ts";
 export type { Mutation } from "@qubit-rs/client";
