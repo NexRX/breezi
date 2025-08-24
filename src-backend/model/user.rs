@@ -1,11 +1,12 @@
 use crate::logic::{REGEX_USERNAME, REGEX_UUID};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sqlx::{Executor, Sqlite};
 use uuid::Uuid;
 use validator::Validate;
 
 #[derive(restructed::Models)] // must be separate
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow, ts_rs::TS, PartialEq, Eq, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow, ts_rs::TS, PartialEq, Eq, Validate, JsonSchema)]
 #[view(UserRegistration, fields(username, password, email), attributes_with = "all")]
 pub struct UserAll {
     #[validate(regex(path = *REGEX_UUID, code = "uuid"))]

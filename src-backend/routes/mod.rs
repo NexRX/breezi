@@ -1,6 +1,8 @@
 mod auth;
 mod spa;
 
+use std::path::Path;
+
 use crate::{Config, routes::spa::Spa};
 use axum::routing::Router;
 use axum_embed::FallbackBehavior;
@@ -13,6 +15,7 @@ pub struct Routes {
     pub auth: ServerHandle,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct Ctx {
     pub config: Config,
@@ -23,7 +26,7 @@ impl Routes {
     pub fn build(config: Config, pool: SqlitePool) -> crate::Result<Self> {
         let is_cors = config.server_cors;
         let ctx = Ctx { config, pool };
-        let (auth_service, auth) = auth::router(&ctx.config).to_service(ctx);
+        let (auth_service, auth) = auth::router().to_service(ctx);
 
         let mut axum = axum::Router::<()>::new()
             .nest_service("/rpc", auth_service)
@@ -48,5 +51,9 @@ impl Routes {
     pub fn stop_services(self) -> crate::Result {
         self.auth.stop()?;
         Ok(())
+    }
+
+    pub fn gen_bindings(bindings_dir: &Path) {
+        auth::router().write_bindings_to_dir(bindings_dir);
     }
 }

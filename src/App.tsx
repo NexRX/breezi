@@ -1,11 +1,14 @@
-import { createResource, Suspense, type Component } from "solid-js";
+import { type Component } from "solid-js";
 import logo from "./logo.svg";
 import { http, build_client } from "@qubit-rs/client";
 import type { QubitServer } from "../bindings";
 import { Button } from "./components/ui/button";
 import { TextField, TextFieldInput } from "./components/ui/text-field";
-import { Flex } from "./components/ui/flex";
 import { match, P } from "ts-pattern";
+import { schema as UserSchema } from "../bindings/user.schema";
+import * as v from "valibot";
+import { createForm, valiForm } from "@modular-forms/solid";
+import { ModularFormField } from "./components/form/field";
 
 const rpcUrl = import.meta.env.DEV
   ? "http://localhost:8080/rpc"
@@ -57,20 +60,27 @@ const App: Component = () => {
         >
           Learn Solid
         </a>
-        <Flex flexDirection="col" class="gap-5 p-5">
-          <TextField>
-            <TextFieldInput id="username" placeholder="Username" />
-          </TextField>
-          <TextField>
-            <TextFieldInput id="password" placeholder="Password" />
-          </TextField>
-          <TextField>
-            <TextFieldInput id="email" placeholder="Email" />
-          </TextField>
-          <Button onClick={handleRegister}>Register</Button>
-        </Flex>
+        <Register />
       </header>
     </div>
+  );
+};
+
+const Register: Component = () => {
+  const RegisterSchema = v.pick(UserSchema, ["username", "email", "password"]);
+  type RegisterForm = v.InferInput<typeof RegisterSchema>;
+
+  const [registerForm, { Form, Field }] = createForm<RegisterForm>({
+    validate: valiForm(RegisterSchema),
+  });
+
+  return (
+    <Form class="flex flex-col gap-5 p-5">
+      <ModularFormField Field={Field} name="username" />
+      <ModularFormField Field={Field} name="email" />
+      <ModularFormField Field={Field} name="password" />
+      <Button type="submit">Register</Button>
+    </Form>
   );
 };
 

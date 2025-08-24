@@ -6,12 +6,11 @@ use std::{collections::HashMap, sync::LazyLock};
 use validator::{Validate, ValidationErrors};
 
 /// `#[validate(regex(path = *REGEX_USERNAME, code = "username"))]`
-pub static REGEX_USERNAME: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^[a-zA-Z0-9_]{1,32}$").unwrap());
+pub static PATTERN_USERNAME: &str = r"^[a-zA-Z0-9_]{1,32}$";
+pub static REGEX_USERNAME: LazyLock<Regex> = LazyLock::new(|| Regex::new(PATTERN_USERNAME).unwrap());
 
-/// `#[validate(regex(path = *REGEX_UUID, code = "uuid"))]`
-pub static REGEX_UUID: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$").unwrap()
-});
+pub static PATTERN_UUID: &str = r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$";
+pub static REGEX_UUID: LazyLock<Regex> = LazyLock::new(|| Regex::new(PATTERN_UUID).unwrap());
 
 #[allow(dead_code)] // Keep it here, it works but then you have to use try/catch in js land
 #[derive(Debug, Deref, DerefMut, Clone)]

@@ -18,6 +18,7 @@ async fn main() -> Result {
 
     info!("Starting up...");
     let config = Config::parse()?;
+    crate::logic::generate_all_bindings(&config)?;
     let pool = setup_database(&config).await?;
     let router = Routes::build(config.clone(), pool)?;
 

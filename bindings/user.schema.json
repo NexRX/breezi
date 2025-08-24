@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UserAll",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+    },
+    "password": {
+      "type": "string",
+      "maxLength": 1024,
+      "minLength": 5
+    },
+    "username": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_]{1,32}$"
+    }
+  },
+  "required": ["id", "username", "password", "email"]
+}

@@ -3,7 +3,6 @@ use qubit::handler;
 use tracing::info;
 use validator::Validate;
 
-use crate::Config;
 use crate::model::ErrorResponse;
 use crate::model::UserRegistration;
 use crate::routes::Ctx;
@@ -15,15 +14,8 @@ async fn register(ctx: Ctx, user: UserRegistration) -> crate::Result<String, Err
     Ok(user.insert(&ctx.pool).await?)
 }
 
-pub fn router(config: &Config) -> Router<Ctx> {
-    let router = qubit::Router::<Ctx>::new().handler(register);
-
-    if config.bindings_generate {
-        router.write_bindings_to_dir(&config.bindings_dir);
-        info!("Generated Bindings: {:#?}", &config.bindings_dir);
-    }
-
-    router
+pub fn router() -> Router<Ctx> {
+    qubit::Router::<Ctx>::new().handler(register)
 }
 
 #[cfg(test)]
